@@ -66,12 +66,16 @@ export async function ApreView() {
   const allExercises = listExercises();
   const templates = listTemplates();
 
-  // --- MODE RÉHAB : DÉTECTION ---
+  // --- NOUVEAU: DÉTECTION RISQUE / RÉHAB ---
+  // On récupère le dernier log douleur pour savoir si on doit brider l'interface
   const logs = await getPainLogs({ limit: 1 });
   const lastPain = logs[0] || null;
-  const isInjured = lastPain && (lastPain.state === 'ROUGE' || lastPain.state === 'ORANGE');
-  const injuryZone = lastPain?.bodyPart || 'Zone inconnue';
-  // -----------------------------
+  
+  // Calcul de l'état actuel (si pas de check-in ce matin, on prend celui d'hier)
+  const painState = lastPain ? (lastPain.state || 'VERT') : 'VERT';
+  const isInjured = painState === 'ROUGE' || painState === 'ORANGE';
+  const injuryZone = lastPain?.bodyPart || 'Zone sensible';
+  // ------------------------------------------
 
   const sessionState = {
     mode: 'selection',
@@ -173,18 +177,29 @@ export async function ApreView() {
   // --- RENDERERS ---
 
   function renderSelection() {
-    // FILTRAGE INTELLIGENT
+    // FILTRAGE INTELLIGENT BASÉ SUR LE TRAFFIC LIGHT
     let visibleTemplates = templates;
     let visibleExercises = allExercises;
     let alertBanner = null;
 
     if (isInjured) {
-       // Si blessé, on cache les templates "Impact" ou "Performance"
-       visibleTemplates = templates.filter(t => t.tags?.includes('rehab') || t.tags?.includes('safe') || t.tags?.includes('low_impact'));
-       // On cache les exercices "Impact"
-       visibleExercises = allExercises.filter(e => !e.tags?.includes('impact') && !e.tags?.includes('risk'));
+       // Si blessé, on ne garde que les templates "safe" ou "rehab"
+       visibleTemplates = templates.filter(t => 
+         t.tags?.includes('rehab') || 
+         t.tags?.includes('safe') || 
+         t.tags?.includes('low_impact')
+       );
        
-       alertBanner = Notice(`<strong>🚨 Mode Réhab activé</strong><br/>Douleur signalée à : ${injuryZone}.<br/>Les exercices à impact et charge lourde sont masqués.`, 'warning');
+       // On cache les exercices à "impact" ou "risk" de la liste individuelle
+       visibleExercises = allExercises.filter(e => 
+         !e.tags?.includes('impact') && 
+         !e.tags?.includes('risk')
+       );
+       
+       alertBanner = h('div', { class: 'notice', style: 'border-left-color:var(--warning); background:rgba(251,191,36,0.1); margin-bottom:1rem;' },
+         h('strong', { style:'color:var(--warning)' }, `⚠️ Mode Protection (${painState})`),
+         h('div', {}, `Douleur détectée (${injuryZone}). Les exercices à fort impact sont masqués.`)
+       );
     }
 
     const tplDiv = h('div', { class: 'grid' },
@@ -206,6 +221,12 @@ export async function ApreView() {
           );
       })
     );
+    
+    // Si aucun template dispo (cas rare si tout est taggé 'risk')
+    if (visibleTemplates.length === 0) {
+      tplDiv.innerHTML = '';
+      tplDiv.append(Notice("Aucun programme complet disponible dans cet état de douleur. Reposez-vous ou consultez un spécialiste.", "warning"));
+    }
 
     const exoDiv = h('div', { class: 'card' },
       h('h2', {}, 'Ou exercice unique'),
@@ -213,7 +234,7 @@ export async function ApreView() {
         ...visibleExercises.map(e => h('option', { value: e.id }, e.name))
       ),
       Button('Go', { onClick: () => {
-        const sel = root.querySelector('#single-ex-select');
+        const sel = document.getElementById('single-ex-select'); // correction sélecteur
         sessionState.queue = [sel.value];
         sessionState.currentIndex = 0;
         sessionState.mode = 'running';
@@ -222,7 +243,7 @@ export async function ApreView() {
     );
 
     return h('div', { class: 'grid' },
-      alertBanner || Notice('<strong>Nouveau :</strong> Choisissez une routine complète ou un exercice isolé.'),
+      alertBanner || Notice('Choisissez une routine complète ou un exercice isolé.'),
       tplDiv, exoDiv
     );
   }
