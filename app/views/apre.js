@@ -1,6 +1,6 @@
 // Vue - Séance & Runner (Support Templates, Auto-Régression & Mode Réhab)
 import { h, roundToStep, numberOrNull, humanKg } from '../utils.js';
-import { Card, Button, Notice, Divider, ProgressBar, showToast } from '../ui.js';
+import { Card, Button, Notice, Divider, ProgressBar, showToast, Timer } from '../ui.js';
 import { getProfile, saveProfile, addWorkout, addPainLog, getWorkouts, getPainLogs } from '../db.js';
 import { listProtocols, warmupPlan, ajusteAPRE, protocolLabel } from '../logic/apre.js';
 import { getExercise, listExercises, listTemplates, getTemplate } from '../data/exercises.js';
@@ -92,10 +92,11 @@ export async function ApreView() {
     repsSet3: null, set4Kg: null, nextBaselineKg: null,
     message: '',
     tempo: { ecc: 3, pause: 0, con: 1 },
-    showStickman: false
+    showStickman: true
   };
 
   const stick = makeStickman();
+  let activeTimer = null;
   const root = h('div', { class: 'grid' });
 
   function getBaseline(exId, protoId) {
@@ -304,15 +305,45 @@ export async function ApreView() {
             else if (setNumber === 4) exState.step = 'set3_input';
             render();
         }}),
-        Button(setNumber === 3 ? 'Saisir Reps' : (setNumber === 4 ? 'Finir Exercice' : 'Suivant'), { onClick: () => {
-          if (setNumber === 1) exState.step = 'set2';
-          else if (setNumber === 2) exState.step = 'set3';
-          else if (setNumber === 3) exState.step = 'set3_input';
-          else if (setNumber === 4) finishCurrentExercise();
+        Button(setNumber === 3 ? 'Saisir Reps' : (setNumber === 4 ? 'Finir Exercice' : 'Repos'), { onClick: () => {
+          if (setNumber === 4) {
+            finishCurrentExercise();
+          } else {
+            exState.step = 'rest';
+            exState.nextSet = setNumber + 1;
+          }
           render();
         }})
       )
     );
+  }
+
+  function renderRestScreen() {
+    const duration = 90;
+    const onComplete = () => {
+      exState.step = `set${exState.nextSet}`;
+      render();
+    };
+
+    activeTimer = Timer(duration, onComplete);
+
+    const skipButton = Button('Passer', {
+      variant: 'btn--ghost',
+      onClick: () => {
+        activeTimer.destroy();
+        onComplete();
+      }
+    });
+
+    const timerCard = Card('Repos',
+      h('div', { style: 'display:flex; justify-content:center; padding: 1rem 0;' }, activeTimer.el),
+      h('div', { style: 'text-align:center;' }, skipButton)
+    );
+
+    // Démarrer le timer après l'affichage pour que l'animation soit fluide
+    setTimeout(() => activeTimer.start(), 50);
+
+    return timerCard;
   }
 
   function renderSet3Input() {
@@ -331,7 +362,10 @@ export async function ApreView() {
           const stepKg = profile.weightStepKg || 2.5;
           exState.set4Kg = roundToStep(exState.baselineKg + adj.set4Delta, stepKg);
           exState.nextBaselineKg = roundToStep(exState.baselineKg + adj.nextDelta, stepKg);
-          exState.message = adj.message; exState.step = 'set4'; render();
+          exState.message = adj.message;
+          exState.step = 'rest'; // Va au repos avant la série 4
+          exState.nextSet = 4;
+          render();
         }})
       )
     );
@@ -401,6 +435,12 @@ export async function ApreView() {
 
   function render() {
     root.innerHTML = '';
+    // Nettoie tout timer actif avant de re-rendre
+    if (activeTimer) {
+      activeTimer.destroy();
+      activeTimer = null;
+    }
+
     if (sessionState.mode === 'selection') root.appendChild(renderSelection());
     else if (sessionState.mode === 'summary') root.appendChild(renderSummary());
     else {
@@ -409,8 +449,9 @@ export async function ApreView() {
         else if (exState.step === 'set2') root.appendChild(renderSetScreen(2));
         else if (exState.step === 'set3') root.appendChild(renderSetScreen(3));
         else if (exState.step === 'set3_input') root.appendChild(renderSet3Input());
+        else if (exState.step === 'rest') root.appendChild(renderRestScreen());
         else if (exState.step === 'set4') root.appendChild(renderSetScreen(4));
-        if (exState.showStickman && ['setup','set1','set2','set3'].includes(exState.step)) { stick.stop(); stick.animate(exState.tempo); } else { stick.stop(); }
+        if (exState.showStickman && ['setup','set1','set2','set3','set4'].includes(exState.step)) { stick.stop(); stick.animate(exState.tempo); } else { stick.stop(); }
     }
   }
 
@@ -420,6 +461,9 @@ export async function ApreView() {
     el: root,
     onunload: () => {
       stick.stop();
+      if (activeTimer) {
+        activeTimer.destroy();
+      }
     }
   };
 }
