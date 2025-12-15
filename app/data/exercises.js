@@ -154,6 +154,14 @@ export function getExercise(id) {
 }
 
 /**
+ * Retourne tous les exercices sous forme de tableau.
+ * @returns {object[]}
+ */
+export function listExercises() {
+  return Object.entries(EXERCISES).map(([id, data]) => ({ id, ...data }));
+}
+
+/**
  * Retourne la chaîne de progression complète pour un exercice donné
  * @param {string} id
  * @returns {object[]}
