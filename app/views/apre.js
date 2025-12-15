@@ -1,6 +1,6 @@
-// Vue - séance APRE
+// Vue - séance APRE (Ergonomie améliorée)
 import { h, roundToStep, numberOrNull, humanKg } from '../utils.js';
-import { Card, Button, Notice, Divider, ProgressBar } from '../ui.js';
+import { Card, Button, Notice, Divider, ProgressBar, showToast } from '../ui.js';
 import { getProfile, saveProfile, addWorkout, addPainLog } from '../db.js';
 import { listProtocols, warmupPlan, ajusteAPRE, protocolLabel, protocolTarget } from '../logic/apre.js';
 import { getExercise } from '../data/exercises.js';
@@ -8,29 +8,24 @@ import { computeTrafficLight } from '../logic/pain.js';
 
 function makeStickman() {
   const svg = h('svg', { class: 'stickman', viewBox: '0 0 220 220', role: 'img', 'aria-label': 'Stickman tempo squat' });
-
   const bg = h('rect', { x: 0, y: 0, width: 220, height: 220, fill: 'transparent' });
-
-  const head = h('circle', { cx: 150, cy: 45, r: 12, stroke: 'rgba(232,238,242,0.9)', 'stroke-width': 3, fill: 'transparent' });
+  const head = h('circle', { cx: 150, cy: 45, r: 12, stroke: '#e2e8f0', 'stroke-width': 3, fill: 'transparent' });
 
   const hip = { x: 130, y: 100 };
   const shoulder = { x: 140, y: 70 };
   const knee = { x: 125, y: 140 };
   const ankle = { x: 125, y: 185 };
 
-  const trunk = h('line', { x1: shoulder.x, y1: shoulder.y, x2: hip.x, y2: hip.y, stroke: 'rgba(232,238,242,0.9)', 'stroke-width': 4, 'stroke-linecap': 'round' });
-  const thigh = h('line', { x1: hip.x, y1: hip.y, x2: knee.x, y2: knee.y, stroke: 'rgba(232,238,242,0.9)', 'stroke-width': 4, 'stroke-linecap': 'round' });
-  const shin = h('line', { x1: knee.x, y1: knee.y, x2: ankle.x, y2: ankle.y, stroke: 'rgba(232,238,242,0.9)', 'stroke-width': 4, 'stroke-linecap': 'round' });
-
-  const arm = h('line', { x1: shoulder.x, y1: shoulder.y, x2: shoulder.x + 30, y2: shoulder.y + 20, stroke: 'rgba(232,238,242,0.6)', 'stroke-width': 3, 'stroke-linecap': 'round' });
-
-  const foot = h('line', { x1: ankle.x - 10, y1: ankle.y + 6, x2: ankle.x + 22, y2: ankle.y + 6, stroke: 'rgba(232,238,242,0.6)', 'stroke-width': 3, 'stroke-linecap': 'round' });
+  const trunk = h('line', { x1: shoulder.x, y1: shoulder.y, x2: hip.x, y2: hip.y, stroke: '#e2e8f0', 'stroke-width': 4, 'stroke-linecap': 'round' });
+  const thigh = h('line', { x1: hip.x, y1: hip.y, x2: knee.x, y2: knee.y, stroke: '#e2e8f0', 'stroke-width': 4, 'stroke-linecap': 'round' });
+  const shin = h('line', { x1: knee.x, y1: knee.y, x2: ankle.x, y2: ankle.y, stroke: '#e2e8f0', 'stroke-width': 4, 'stroke-linecap': 'round' });
+  const arm = h('line', { x1: shoulder.x, y1: shoulder.y, x2: shoulder.x + 30, y2: shoulder.y + 20, stroke: '#94a3b8', 'stroke-width': 3, 'stroke-linecap': 'round' });
+  const foot = h('line', { x1: ankle.x - 10, y1: ankle.y + 6, x2: ankle.x + 22, y2: ankle.y + 6, stroke: '#94a3b8', 'stroke-width': 3, 'stroke-linecap': 'round' });
 
   svg.append(bg, head, trunk, thigh, shin, arm, foot);
 
   let raf = null;
   let running = false;
-
   function lerp(a, b, t) { return a + (b - a) * t; }
 
   function animate({ ecc = 3, pause = 0, con = 1 } = {}) {
@@ -46,27 +41,20 @@ function makeStickman() {
     const loop = (now) => {
       if (!running) return;
       const elapsed = (now - start) % cycle;
-
-      // phases: ecc (descente) -> pause -> con (montée)
       let phase = 'ecc';
       let t = 0;
-
       const eccMs = ecc * 1000;
       const pauseMs = pause * 1000;
       const conMs = con * 1000;
 
       if (elapsed < eccMs) {
-        phase = 'ecc';
-        t = elapsed / eccMs;
+        phase = 'ecc'; t = elapsed / eccMs;
       } else if (elapsed < eccMs + pauseMs) {
-        phase = 'pause';
-        t = pauseMs === 0 ? 1 : (elapsed - eccMs) / pauseMs;
+        phase = 'pause'; t = pauseMs === 0 ? 1 : (elapsed - eccMs) / pauseMs;
       } else {
-        phase = 'con';
-        t = (elapsed - eccMs - pauseMs) / conMs;
+        phase = 'con'; t = (elapsed - eccMs - pauseMs) / conMs;
       }
 
-      // progress down-up
       let p;
       if (phase === 'ecc') p = t;
       else if (phase === 'pause') p = 1;
@@ -77,18 +65,13 @@ function makeStickman() {
       const kx = lerp(kneeTop.x, kneeBottom.x, p);
       const ky = lerp(kneeTop.y, kneeBottom.y, p);
 
-      trunk.setAttribute('x2', hx);
-      trunk.setAttribute('y2', hy);
-      thigh.setAttribute('x1', hx);
-      thigh.setAttribute('y1', hy);
-      thigh.setAttribute('x2', kx);
-      thigh.setAttribute('y2', ky);
-      shin.setAttribute('x1', kx);
-      shin.setAttribute('y1', ky);
+      trunk.setAttribute('x2', hx); trunk.setAttribute('y2', hy);
+      thigh.setAttribute('x1', hx); thigh.setAttribute('y1', hy);
+      thigh.setAttribute('x2', kx); thigh.setAttribute('y2', ky);
+      shin.setAttribute('x1', kx); shin.setAttribute('y1', ky);
 
       raf = requestAnimationFrame(loop);
     };
-
     raf = requestAnimationFrame(loop);
   }
 
@@ -97,7 +80,6 @@ function makeStickman() {
     if (raf) cancelAnimationFrame(raf);
     raf = null;
   }
-
   return { svg, animate, stop };
 }
 
@@ -110,16 +92,12 @@ export async function ApreView() {
 
   const protocols = listProtocols();
   const exercises = [
-    'goblet_squat',
-    'back_squat',
-    'calf_single_loaded',
-    'calf_ecc_single',
-    'plank_elbows',
-    'short_foot'
+    'goblet_squat', 'back_squat', 'calf_single_loaded',
+    'calf_ecc_single', 'plank_elbows', 'short_foot'
   ].map(id => getExercise(id)).filter(Boolean);
 
   const state = {
-    step: 'setup', // setup | set1 | set2 | set3 | set4 | done
+    step: 'setup', 
     protocolId: 'APRE6',
     exerciseId: exercises[0]?.id || 'goblet_squat',
     baselineKg: null,
@@ -129,26 +107,21 @@ export async function ApreView() {
     message: '',
     tempo: { ecc: 3, pause: 0, con: 1 },
     showStickman: false,
-    painAfter: null,
-    painMorning: null,
-    painBodyPart: ''
+    painAfter: null, painMorning: null, painBodyPart: ''
   };
 
   const stick = makeStickman();
-
   const root = h('div', { class: 'grid' });
 
   function getBaselineFromProfile() {
     const map = profile.apreBaselines || {};
     const ex = map[state.exerciseId] || {};
-    const w = ex[state.protocolId];
-    return Number.isFinite(w) ? w : null;
+    return Number.isFinite(ex[state.protocolId]) ? ex[state.protocolId] : null;
   }
 
   function setBaselineInProfile(nextKg) {
     const stepKg = profile.weightStepKg || 2.5;
     const rounded = roundToStep(nextKg, stepKg);
-
     const baselines = { ...(profile.apreBaselines || {}) };
     baselines[state.exerciseId] = { ...(baselines[state.exerciseId] || {}) };
     baselines[state.exerciseId][state.protocolId] = rounded;
@@ -166,8 +139,7 @@ export async function ApreView() {
     );
 
     const baselineInput = h('input', {
-      placeholder: 'Ex: 40',
-      inputmode: 'decimal',
+      placeholder: 'Ex: 40', inputmode: 'decimal',
       value: state.baselineKg ?? getBaselineFromProfile() ?? '',
       onInput: (e) => state.baselineKg = numberOrNull(e.target.value)
     });
@@ -178,74 +150,45 @@ export async function ApreView() {
 
     const startBtn = Button('Démarrer', { onClick: () => {
       const b = numberOrNull(baselineInput.value);
-      if (!b || b <= 0) { alert('Entrez une charge de départ (kg) pour la série 3.'); return; }
+      if (!b || b <= 0) { showToast('Veuillez entrer une charge de départ valide (kg).', 'error'); return; }
       state.baselineKg = b;
       state.step = 'set1';
       render();
-      if (state.showStickman) {
-        stick.stop();
-        stick.animate(state.tempo);
-      }
+      if (state.showStickman) { stick.stop(); stick.animate(state.tempo); }
     }});
 
-    const stickToggle = Button(state.showStickman ? 'Masquer le stickman' : 'Afficher le stickman', { variant: 'btn--ghost', onClick: () => {
+    const stickToggle = Button(state.showStickman ? 'Masquer Tempo' : 'Voir Tempo', { variant: 'btn--ghost', onClick: () => {
       state.showStickman = !state.showStickman;
       render();
-      if (state.showStickman) {
-        stick.stop();
-        stick.animate(state.tempo);
-      } else {
-        stick.stop();
-      }
+      if (state.showStickman) { stick.stop(); stick.animate(state.tempo); } else { stick.stop(); }
     }});
 
     const hint = getExercise(state.exerciseId)?.cues?.slice(0,2)?.map(c => `- ${c}`).join('<br/>') || '';
 
-    return Card('Séance APRE',
-      Notice(`<strong>Principe</strong> - 4 séries - la 3ème pilote l’ajustement (auto-régulation).`),
-      Divider(),
+    return Card('Configuration Séance',
       h('div', { class: 'grid grid--2' },
-        h('div', {},
-          h('label', {}, 'Protocole'),
-          protoSel,
-          h('div', { class: 'small' }, `Cible reps set 3 - ${protocolTarget(state.protocolId)}.`)
-        ),
-        h('div', {},
-          h('label', {}, 'Exercice'),
-          exSel
-        )
+        h('div', {}, h('label', {}, 'Protocole'), protoSel),
+        h('div', {}, h('label', {}, 'Exercice'), exSel)
       ),
-      h('label', {}, 'Charge de départ (série 3) en kg'),
+      h('label', {}, 'Charge départ (série 3)'),
       baselineInput,
-      h('div', { class: 'small' }, 'C’est votre estimation du RM du protocole (3RM - 6RM - 10RM). On corrigera automatiquement.'),
+      h('div', { class: 'small' }, 'Estimation de votre 3RM, 6RM ou 10RM.'),
       Divider(),
       h('div', { class: 'grid grid--2' },
-        h('div', {},
-          h('label', {}, 'Tempo (descente) en secondes'),
-          tempoE
-        ),
-        h('div', {},
-          h('label', {}, 'Tempo (pause) en secondes'),
-          tempoP
-        )
+        h('div', {}, h('label', {}, 'Tempo Descente'), tempoE),
+        h('div', {}, h('label', {}, 'Pause bas'), tempoP)
       ),
       h('div', { class: 'grid grid--2' },
-        h('div', {},
-          h('label', {}, 'Tempo (montée) en secondes'),
-          tempoC
-        ),
-        h('div', {},
-          h('label', {}, 'Arrondi des charges'),
-          h('div', { class: 'badge' }, `${profile.weightStepKg || 2.5} kg`)
-        )
+        h('div', {}, h('label', {}, 'Montée'), tempoC),
+        h('div', {}, h('label', {}, 'Arrondi'), h('div', { class: 'badge' }, `${profile.weightStepKg || 2.5} kg`))
       ),
-      hint ? Notice(`<strong>Points clés</strong><br/>${hint}`) : null,
+      hint ? Notice(hint) : null,
       Divider(),
       h('div', { class: 'row row--between' },
-        h('div', { class: 'row' }, startBtn, stickToggle),
-        Button('Retour', { variant: 'btn--ghost', onClick: () => location.hash = '#/home' })
+        Button('Retour', { variant: 'btn--ghost', onClick: () => location.hash = '#/home' }),
+        h('div', { class: 'row' }, stickToggle, startBtn)
       ),
-      state.showStickman ? h('div', { class: 'row' }, stick.svg) : null
+      state.showStickman ? stick.svg : null
     );
   }
 
@@ -253,66 +196,52 @@ export async function ApreView() {
     const stepKg = profile.weightStepKg || 2.5;
     const plan = warmupPlan(state.baselineKg, state.protocolId);
     const isSet4 = setNumber === 4;
-
     const setInfo = isSet4
-      ? { set: 4, weight: state.set4Kg, repsHint: 'max propre', note: 'Série d’ajustement' }
+      ? { set: 4, weight: state.set4Kg, repsHint: 'Max propre', note: 'Ajustement' }
       : plan.find(s => s.set === setNumber);
 
     const weightRounded = roundToStep(setInfo.weight, stepKg);
-
     const pct = Math.round((setNumber / 4) * 100);
-
-    const title = `Série ${setNumber} sur 4`;
-    const note = `${setInfo.note || ''}`;
-    const reps = setInfo.repsHint != null ? `Objectif reps (indicatif) - ${setInfo.repsHint}` : '';
-
-    const nextBtnLabel = setNumber === 3 ? 'Entrer les reps de la série 3' : (setNumber === 4 ? 'Terminer' : 'Série suivante');
 
     const content = h('div', { class: 'stack' },
       ProgressBar(pct),
       h('div', { class: 'row row--between' },
-        h('div', { class: 'badge' }, protocolLabel(state.protocolId)),
-        h('div', { class: 'badge' }, getExercise(state.exerciseId)?.name || state.exerciseId)
+        h('span', { class: 'badge badge--ok' }, `Série ${setNumber} / 4`),
+        h('span', { class: 'small' }, protocolLabel(state.protocolId))
       ),
-      h('div', { class: 'notice' },
-        h('div', { class: 'small' }, note),
-        h('div', { class: 'mono', style: 'font-size:26px; font-weight:800; margin-top:8px; color: var(--text)' }, humanKg(weightRounded)),
-        reps ? h('div', { class: 'small', style: 'margin-top:8px' }, reps) : null
+      h('div', { style: 'text-align:center; padding: 2rem 0;' },
+        h('div', { style: 'font-size:3rem; font-weight:800; color:var(--primary); line-height:1' }, humanKg(weightRounded)),
+        h('div', { class: 'small', style: 'margin-top:0.5rem' }, setInfo.note),
+        setInfo.repsHint ? h('div', { class: 'badge', style:'margin-top:1rem' }, `Objectif : ${setInfo.repsHint} reps`) : null
       ),
-      state.showStickman ? h('div', { class: 'row' }, stick.svg) : null
+      state.showStickman ? stick.svg : null
     );
 
-    const nextBtn = Button(nextBtnLabel, { onClick: () => {
-      if (setNumber === 1) { state.step = 'set2'; render(); return; }
-      if (setNumber === 2) { state.step = 'set3'; render(); return; }
-      if (setNumber === 3) { state.step = 'set3_input'; render(); return; }
-      if (setNumber === 4) { state.step = 'done'; render(); return; }
+    const nextBtn = Button(setNumber === 3 ? 'Saisir Reps' : (setNumber === 4 ? 'Terminer' : 'Suivant'), { onClick: () => {
+      if (setNumber === 1) state.step = 'set2';
+      else if (setNumber === 2) state.step = 'set3';
+      else if (setNumber === 3) state.step = 'set3_input';
+      else if (setNumber === 4) state.step = 'done';
+      render();
     }});
 
-    const backBtn = Button('Revenir', { variant: 'btn--ghost', onClick: () => {
-      if (setNumber === 1) { state.step = 'setup'; render(); return; }
-      if (setNumber === 2) { state.step = 'set1'; render(); return; }
-      if (setNumber === 3) { state.step = 'set2'; render(); return; }
-      if (setNumber === 4) { state.step = 'set3_input'; render(); return; }
+    const backBtn = Button('Précédent', { variant: 'btn--ghost', onClick: () => {
+      if (setNumber === 1) state.step = 'setup';
+      else if (setNumber === 2) state.step = 'set1';
+      else if (setNumber === 3) state.step = 'set2';
+      else if (setNumber === 4) state.step = 'set3_input';
+      render();
     }});
 
-    return Card(title,
-      content,
-      Divider(),
-      h('div', { class: 'row row--between' },
-        h('div', { class: 'row' }, backBtn),
-        h('div', { class: 'row' }, nextBtn)
-      )
-    );
+    return Card('', content, Divider(), h('div', { class: 'row row--between' }, backBtn, nextBtn));
   }
 
   function renderSet3Input() {
-    const repsInput = h('input', { placeholder: 'Ex: 7', inputmode: 'numeric', value: state.repsSet3 ?? '' });
-    const hint = 'Comptez uniquement les reps avec technique propre. Stop dès que ça s’effondre.';
-
-    const confirmBtn = Button('Calculer la série 4', { onClick: () => {
+    const repsInput = h('input', { placeholder: 'Ex: 7', inputmode: 'numeric', value: state.repsSet3 ?? '', autoFocus: true });
+    
+    const confirmBtn = Button('Calculer la suite', { onClick: () => {
       const reps = numberOrNull(repsInput.value);
-      if (reps == null || reps < 0) { alert('Entrez un nombre de répétitions.'); return; }
+      if (reps == null || reps < 0) { showToast('Veuillez entrer le nombre de reps.', 'error'); return; }
       state.repsSet3 = reps;
       const adj = ajusteAPRE({ protocolId: state.protocolId, repsSet3: reps });
       const stepKg = profile.weightStepKg || 2.5;
@@ -323,105 +252,75 @@ export async function ApreView() {
       render();
     }});
 
-    return Card('Série 3 - résultat',
-      Notice(`<strong>Input critique</strong> - c’est ici que l’app joue les coachs (sans crier dans votre oreille).`),
-      h('label', {}, 'Répétitions réalisées (série 3)'),
+    return Card('Série 3 - Résultat',
+      Notice('Comptez uniquement les répétitions avec une technique parfaite.'),
+      h('label', {}, 'Répétitions réalisées'),
       repsInput,
-      h('div', { class: 'small' }, hint),
       Divider(),
       h('div', { class: 'row row--between' },
-        Button('Revenir', { variant: 'btn--ghost', onClick: () => { state.step = 'set3'; render(); } }),
+        Button('Retour', { variant: 'btn--ghost', onClick: () => { state.step = 'set3'; render(); } }),
         confirmBtn
       )
     );
   }
 
   function renderSet4() {
-    const msg = state.message || '—';
     return h('div', { class: 'grid' },
       renderSetScreen(4),
-      Card('Ajustement',
-        Notice(`<strong>Décision</strong> - ${msg}`),
+      Card('Analyse & Ajustement',
+        Notice(state.message, 'info'),
         h('div', { class: 'row' },
-          h('div', { class: 'kpi' }, h('div', { class: 'kpi__label' }, 'Série 4'), h('div', { class: 'kpi__value' }, humanKg(state.set4Kg))),
-          h('div', { class: 'kpi' }, h('div', { class: 'kpi__label' }, 'Baseline prochaine séance'), h('div', { class: 'kpi__value' }, humanKg(state.nextBaselineKg)))
+          h('div', { class: 'kpi' }, h('div', { class: 'small' }, 'Série 4'), h('div', { class: 'kpi__val' }, humanKg(state.set4Kg))),
+          h('div', { class: 'kpi' }, h('div', { class: 'small' }, 'Prochaine Base'), h('div', { class: 'kpi__val' }, humanKg(state.nextBaselineKg)))
         )
       )
     );
   }
 
   function renderDone() {
-    const bodyPart = h('input', { placeholder: 'Ex: tendon d’Achille, genou, hanche…', value: state.painBodyPart || '' });
+    const bodyPart = h('input', { placeholder: 'Ex: Genou droit...', value: state.painBodyPart || '' });
     const painAfter = h('input', { placeholder: '0-10', inputmode: 'numeric', value: state.painAfter ?? '' });
     const painMorning = h('input', { placeholder: '0-10', inputmode: 'numeric', value: state.painMorning ?? '' });
 
-    const saveBtn = Button('Enregistrer la séance', { variant: 'btn--ok', onClick: async () => {
-      // baseline update
+    const saveBtn = Button('Enregistrer', { variant: 'btn--ok', onClick: async () => {
       const roundedBaseline = setBaselineInProfile(state.nextBaselineKg ?? state.baselineKg);
       await saveProfile(profile);
-
       const ex = getExercise(state.exerciseId);
-
       const workout = await addWorkout({
-        kind: 'apre',
-        protocolId: state.protocolId,
-        exerciseId: state.exerciseId,
-        exerciseName: ex?.name || state.exerciseId,
-        baselineStartKg: state.baselineKg,
-        repsSet3: state.repsSet3,
-        set4Kg: state.set4Kg,
-        baselineNextKg: roundedBaseline
+        kind: 'apre', protocolId: state.protocolId, exerciseId: state.exerciseId,
+        exerciseName: ex?.name || state.exerciseId, baselineStartKg: state.baselineKg,
+        repsSet3: state.repsSet3, set4Kg: state.set4Kg, baselineNextKg: roundedBaseline
       });
 
-      // optional pain log
       const pa = numberOrNull(painAfter.value);
       const pm = numberOrNull(painMorning.value);
       if (pa != null || pm != null) {
-        const painDecision = computeTrafficLight({ painAfter: pa ?? 0, painMorning: pm });
+        const pd = computeTrafficLight({ painAfter: pa ?? 0, painMorning: pm });
         await addPainLog({
-          kind: 'after_apre',
-          relatedWorkoutId: workout.id,
-          bodyPart: bodyPart.value.trim(),
-          painAfter: pa,
-          painMorning: pm,
-          state: painDecision.state
+          kind: 'after_apre', relatedWorkoutId: workout.id, bodyPart: bodyPart.value.trim(),
+          painAfter: pa, painMorning: pm, state: pd.state
         });
       }
-
+      showToast('Séance enregistrée avec succès !', 'success');
       location.hash = '#/history';
     }});
 
-    const cancelBtn = Button('Recommencer', { variant: 'btn--ghost', onClick: () => {
-      state.step = 'setup';
-      state.repsSet3 = null;
-      state.set4Kg = null;
-      state.nextBaselineKg = null;
-      state.message = '';
-      render();
-    }});
-
-    return Card('Fin de séance',
-      Notice('<strong>Bien</strong> - maintenant, on stocke et on garde une trace. L’oubli, c’est l’ennemi de la progression.'),
-      Divider(),
+    return Card('Terminé !',
       h('div', { class: 'row' },
-        h('div', { class: 'kpi' }, h('div', { class: 'kpi__label' }, 'Baseline début'), h('div', { class: 'kpi__value' }, humanKg(roundToStep(state.baselineKg, profile.weightStepKg || 2.5)))),
-        h('div', { class: 'kpi' }, h('div', { class: 'kpi__label' }, 'Reps série 3'), h('div', { class: 'kpi__value' }, String(state.repsSet3 ?? '—'))),
-        h('div', { class: 'kpi' }, h('div', { class: 'kpi__label' }, 'Baseline suivante'), h('div', { class: 'kpi__value' }, humanKg(state.nextBaselineKg ?? state.baselineKg)))
+        h('div', { class: 'kpi' }, h('div', { class: 'small' }, 'Reps S3'), h('div', { class: 'kpi__val' }, String(state.repsSet3 ?? '—'))),
+        h('div', { class: 'kpi' }, h('div', { class: 'small' }, 'Nouv. Base'), h('div', { class: 'kpi__val' }, humanKg(state.nextBaselineKg ?? state.baselineKg)))
       ),
       Divider(),
-      h('h3', {}, 'Check douleur (optionnel mais malin)'),
+      h('h3', {}, 'Douleur (Optionnel)'),
       h('div', { class: 'grid grid--2' },
         h('div', {}, h('label', {}, 'Zone'), bodyPart),
-        h('div', {}, h('label', {}, 'Après effort (0-10)'), painAfter)
+        h('div', {}, h('label', {}, 'Après (0-10)'), painAfter)
       ),
-      h('div', {},
-        h('label', {}, 'Le lendemain matin (0-10)'),
-        painMorning,
-        h('div', { class: 'small' }, 'Si la douleur monte à +24h, c’est un signal de surcharge.')
-      ),
+      h('label', {}, 'Lendemain matin (0-10)'),
+      painMorning,
       Divider(),
       h('div', { class: 'row row--between' },
-        cancelBtn,
+        Button('Recommencer', { variant: 'btn--ghost', onClick: () => { state.step='setup'; render(); }}),
         saveBtn
       )
     );
@@ -437,18 +336,12 @@ export async function ApreView() {
     else if (state.step === 'set4') root.appendChild(renderSet4());
     else if (state.step === 'done') root.appendChild(renderDone());
 
-    // stickman control
-    if (state.showStickman && (state.step === 'setup' || state.step === 'set1' || state.step === 'set2' || state.step === 'set3' || state.step === 'set4')) {
-      stick.stop();
-      stick.animate(state.tempo);
-    } else {
-      stick.stop();
-    }
+    if (state.showStickman && ['setup','set1','set2','set3','set4'].includes(state.step)) {
+      stick.stop(); stick.animate(state.tempo);
+    } else { stick.stop(); }
   }
 
-  // init baseline from profile
   state.baselineKg = getBaselineFromProfile();
-
   render();
   return root;
 }

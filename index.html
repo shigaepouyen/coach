@@ -2,37 +2,52 @@
 <html lang="fr">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="theme-color" content="#0b0c10" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+  <meta name="theme-color" content="#0f172a" />
   <title>Coach - Web app autonome</title>
   <link rel="manifest" href="./manifest.webmanifest" />
   <link rel="icon" href="./icons/icon-192.png" />
   <link rel="stylesheet" href="./styles.css" />
+  
+  <!-- Preload fonts if possible, or use system fonts defined in CSS -->
 </head>
 
 <body>
   <header class="topbar">
-    <div class="topbar__left">
-      <div class="logo" aria-hidden="true">🏃‍♀️</div>
-      <div>
-        <div class="brand">Coach</div>
-        <div class="tagline" id="tagline">coaching pragmatique - offline</div>
-      </div>
+    <div>
+      <div class="brand">Coach</div>
+      <div id="tagline" style="font-size:0.75rem; color:var(--text-muted); opacity:0.8;">offline ready</div>
     </div>
-
-    <div class="topbar__right">
-      <span class="pill" id="net-pill" title="État réseau">…</span>
-    </div>
+    
+    <div id="net-pill" class="badge" style="font-size:0.7rem; opacity:0.7;">…</div>
   </header>
 
   <main id="app" class="app" role="main"></main>
 
+  <!-- Container pour les notifications Toast -->
+  <div id="toast-container"></div>
+
   <nav class="bottom-nav" aria-label="Navigation">
-    <a class="bottom-nav__item" href="#/home">Accueil</a>
-    <a class="bottom-nav__item" href="#/apre">Séance</a>
-    <a class="bottom-nav__item" href="#/pain">Douleur</a>
-    <a class="bottom-nav__item" href="#/minimalist">Minimaliste</a>
-    <a class="bottom-nav__item" href="#/history">Historique</a>
+    <a class="bottom-nav__item" href="#/home">
+      <span>🏠</span>
+      <span>Accueil</span>
+    </a>
+    <a class="bottom-nav__item" href="#/apre">
+      <span>🏋️‍♀️</span>
+      <span>Séance</span>
+    </a>
+    <a class="bottom-nav__item" href="#/pain">
+      <span>🚥</span>
+      <span>Douleur</span>
+    </a>
+    <a class="bottom-nav__item" href="#/minimalist">
+      <span>⏱️</span>
+      <span>Minimaliste</span>
+    </a>
+    <a class="bottom-nav__item" href="#/history">
+      <span>📅</span>
+      <span>Historique</span>
+    </a>
   </nav>
 
   <script type="module" src="./app/app.js"></script>
