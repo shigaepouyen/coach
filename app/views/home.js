@@ -76,7 +76,7 @@ export async function HomeView() {
   else if (durabilityScore > 50) coachLine = 'Bonne régularité. Attention aux petits signaux.';
   else coachLine = 'Priorité : Récupération et écoute du corps. Ne forcez pas.';
 
-  return h('div', { class: 'grid' },
+  const el = h('div', { class: 'grid' },
     Card(greet,
       // Nouveau Bloc Gamification
       h('div', { class: 'row row--between', style: 'align-items:center; margin-bottom:1rem' },
@@ -119,4 +119,6 @@ export async function HomeView() {
       )
     )
   );
+
+  return { el };
 }

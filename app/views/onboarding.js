@@ -74,7 +74,7 @@ export async function OnboardingView() {
     location.reload();
   }});
 
-  return h('div', { class: 'grid' },
+  const el = h('div', { class: 'grid' },
     Card('Démarrage express',
       Notice('<strong>Objectif</strong> - une web app autonome, offline-first, avec un moteur de décision (APRE - Traffic Light - minimaliste).'),
       Divider(),
@@ -124,4 +124,6 @@ export async function OnboardingView() {
       h('div', { class: 'small' }, 'Données stockées en local (IndexedDB). Pas besoin de réseau pour s’en servir.')
     )
   );
+
+  return { el };
 }

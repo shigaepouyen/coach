@@ -415,5 +415,11 @@ export async function ApreView() {
   }
 
   render();
-  return root;
+
+  return {
+    el: root,
+    onunload: () => {
+      stick.stop();
+    }
+  };
 }

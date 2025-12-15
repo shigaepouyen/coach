@@ -81,7 +81,7 @@ export async function PainView() {
 
   recompute();
 
-  return h('div', { class: 'grid' },
+  const el = h('div', { class: 'grid' },
     Card('Check Douleur',
       h('div', { class: 'grid grid--2' },
         h('div', {}, h('label', {}, 'Zone du corps'), bodyPart),
@@ -109,4 +109,6 @@ export async function PainView() {
       )
     )
   );
+
+  return { el };
 }

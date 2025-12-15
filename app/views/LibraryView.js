@@ -42,5 +42,6 @@ export function LibraryView() {
     root.replaceChildren(content);
   };
 
-  return { el: root, render };
+  render();
+  return { el: root };
 }
