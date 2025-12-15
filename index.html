@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#0b0c10" />
+  <title>Coach - Web app autonome</title>
+  <link rel="manifest" href="./manifest.webmanifest" />
+  <link rel="icon" href="./icons/icon-192.png" />
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+
+<body>
+  <header class="topbar">
+    <div class="topbar__left">
+      <div class="logo" aria-hidden="true">🏃‍♀️</div>
+      <div>
+        <div class="brand">Coach</div>
+        <div class="tagline" id="tagline">coaching pragmatique - offline</div>
+      </div>
+    </div>
+
+    <div class="topbar__right">
+      <span class="pill" id="net-pill" title="État réseau">…</span>
+    </div>
+  </header>
+
+  <main id="app" class="app" role="main"></main>
+
+  <nav class="bottom-nav" aria-label="Navigation">
+    <a class="bottom-nav__item" href="#/home">Accueil</a>
+    <a class="bottom-nav__item" href="#/apre">Séance</a>
+    <a class="bottom-nav__item" href="#/pain">Douleur</a>
+    <a class="bottom-nav__item" href="#/minimalist">Minimaliste</a>
+    <a class="bottom-nav__item" href="#/history">Historique</a>
+  </nav>
+
+  <script type="module" src="./app/app.js"></script>
+</body>
+</html>
