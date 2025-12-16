@@ -119,7 +119,7 @@ export async function ApreView() {
       step: 'setup', protocolId: 'APRE6', exerciseId: exId,
       baselineKg: getBaseline(exId, 'APRE6'),
       repsSet3: null, set4Kg: null, nextBaselineKg: null,
-      message: '', tempo: { ecc: 3, pause: 0, con: 1 }, showStickman: false
+      message: '', tempo: { ecc: 3, pause: 0, con: 1 }, showStickman: true
     };
     if (exId === 'lunge_matrix' || exId === 'clamshell_iso') { exState.baselineKg = 0; }
     render();
