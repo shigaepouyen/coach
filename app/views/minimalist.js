@@ -114,7 +114,7 @@ export async function MinimalistView() {
   const startBtn = Button('Start 180 BPM', { onClick: startMetronome });
   const stopBtn = Button('Stop', { variant: 'btn--ghost', onClick: stopMetronome });
 
-  return h('div', { class: 'grid' },
+  const el = h('div', { class: 'grid' },
     Card('Transition Minimaliste',
       Notice('Respectez le temps d’exposition. Plafond à 10% du volume total.'),
       h('div', { class: 'row' },
@@ -145,4 +145,11 @@ export async function MinimalistView() {
       )
     ) : null
   );
+
+  return {
+    el,
+    onunload: () => {
+      stopMetronome();
+    }
+  };
 }

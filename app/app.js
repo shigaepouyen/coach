@@ -36,20 +36,32 @@ async function guard(viewFn, ctx) {
   const profile = await getProfile();
   if (!profile && location.hash !== '#/onboarding') {
     location.hash = '#/onboarding';
-    return OnboardingView();
+    // OnboardingView retourne déjà un objet { el, render }
+    // mais pour la simplicité du guard, on l'enveloppe.
+    const view = await OnboardingView();
+    return { el: view.el };
   }
   return viewFn(ctx);
 }
 
+// Wrapper pour les vues qui retournent juste un élément DOM
+const view = (viewFn) => async (ctx) => {
+  const result = await viewFn(ctx);
+  // Si la vue retourne déjà le bon format, on le passe
+  if (result && result.el) return result;
+  // Sinon, on l'enveloppe
+  return { el: result };
+};
+
 const routes = {
-  '/onboarding': () => OnboardingView(),
-  '/home': (ctx) => guard(HomeView, ctx),
-  '/apre': (ctx) => guard(ApreView, ctx),
-  '/pain': (ctx) => guard(PainView, ctx),
-  '/minimalist': (ctx) => guard(MinimalistView, ctx),
-  '/history': (ctx) => guard(HistoryView, ctx),
-  '/library': (ctx) => guard(LibraryView, ctx),
-  '/404': () => HomeView()
+  '/onboarding': view(OnboardingView),
+  '/home': (ctx) => guard(view(HomeView), ctx),
+  '/apre': (ctx) => guard(view(ApreView), ctx),
+  '/pain': (ctx) => guard(view(PainView), ctx),
+  '/minimalist': (ctx) => guard(MinimalistView, ctx), // MinimalistView gérera son propre format
+  '/history': (ctx) => guard(view(HistoryView), ctx),
+  '/library': (ctx) => guard(view(LibraryView), ctx),
+  '/404': view(HomeView)
 };
 
 createRouter({ routes });

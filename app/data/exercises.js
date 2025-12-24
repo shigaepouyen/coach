@@ -1,217 +1,218 @@
-// Coach - bibliothèque d'exercices et templates (avec Tags & Réhab)
-export const EXERCISES = [
-  // --- ECHAUFFEMENT / MOBILITÉ ---
-  {
-    id: 'lunge_matrix',
-    name: 'Lunge Matrix (Échauffement)',
-    category: 'Mobilité - Hanches',
-    cues: ['3 axes : Devant, Côté, Rotation', '5 reps par jambe', 'Contrôle genou'],
-    tags: ['warmup', 'mobility'],
-    regressionId: null, progressionId: null
+// Coach - Bibliothèque d'exercices
+// Structure :
+// - Chaque exercice a un ID unique (slug).
+// - `progression` et `regression` pointent vers d'autres IDs pour créer des chaînes.
+// - `equipment`: 'bw' (bodyweight), 'kb' (kettlebell), 'band', 'box', etc.
+
+export const EXERCISES = {
+  // --- Matrice de Fentes (Échauffement) ---
+  'lunge-forward': {
+    name: 'Fente Avant (avec extension)',
+    category: 'lunge-matrix',
+    target: 'Plan sagittal, mobilité fléchisseurs de hanche',
+    equipment: 'bw',
+    videoUrl: 'https://www.youtube.com/watch?v=iMZaf49lD1s',
+    instructions: [
+      'Faites un grand pas en avant, gardez le torse droit.',
+      'Descendez jusqu\'à ce que les deux genoux soient à 90 degrés.',
+      'En remontant, serrez le fessier de la jambe arrière pour sentir l\'étirement.',
+    ],
   },
-  {
-    id: 'clamshell_iso',
-    name: 'Clamshell (Moyen Fessier)',
-    category: 'Mobilité - Hanches',
-    cues: ['Couché côté', 'Ouvrir le genou sans bouger le bassin', 'Tenir 30-45s'],
-    tags: ['rehab', 'low_impact', 'glutes'],
-    regressionId: null, progressionId: null
+  'lunge-lateral': {
+    name: 'Fente Latérale',
+    category: 'lunge-matrix',
+    target: 'Plan frontal, mobilité adducteurs, stabilité fessiers',
+    equipment: 'bw',
+    videoUrl: 'https://www.youtube.com/watch?v=iMZaf49lD1s',
+    instructions: [
+      'Gardez les deux pieds pointés droit devant.',
+      'Faites un grand pas sur le côté, en gardant une jambe tendue.',
+      'Poussez les hanches vers l\'arrière et ne laissez pas le genou fléchi s\'effondrer vers l\'intérieur.',
+    ],
+  },
+  'lunge-rotational': {
+    name: 'Fente Rotative',
+    category: 'lunge-matrix',
+    target: 'Plan transversal, mobilité et ouverture de hanche',
+    equipment: 'bw',
+    videoUrl: 'https://www.youtube.com/watch?v=iMZaf49lD1s',
+    instructions: [
+      'Depuis la position debout, pivotez sur un pied et ouvrez l\'autre jambe à 90 degrés vers l\'arrière.',
+      'Descendez en fente, en gardant le genou avant aligné avec le pied.',
+      'Revenez à la position de départ en poussant sur la jambe avant.',
+    ],
   },
 
-  // --- FORCE BAS DU CORPS (Squat) ---
-  {
-    id: 'squat_assisted',
-    name: 'Squat assisté (chaise)',
-    category: 'Force - bas du corps',
-    cues: ['Pieds ancrés', 'Descente contrôlée'],
-    tags: ['low_impact'],
-    regressionId: null, progressionId: 'squat_bw'
+  // --- Foot Core (Gainage du pied) ---
+  'foot-core-doming': {
+    name: 'Short Foot / Doming',
+    category: 'foot-core',
+    target: 'Activation neurale des muscles intrinsèques du pied',
+    equipment: 'bw',
+    progression: 'foot-core-towel-curls',
+    videoUrl: 'https://www.youtube.com/watch?v=kig-2M0j-4U',
+    instructions: [
+      'Assis, pied à plat au sol.',
+      'Essayez de raccourcir votre pied en contractant les muscles pour soulever l\'arche.',
+      'Les orteils doivent rester détendus et à plat sur le sol.',
+      'Maintenez la contraction 5-8 secondes, puis relâchez.',
+    ],
   },
-  {
-    id: 'squat_bw',
-    name: 'Squat poids du corps',
-    category: 'Force - bas du corps',
-    cues: ['Amplitude confortable', 'Souffle en remontant'],
-    tags: ['low_impact'],
-    regressionId: 'squat_assisted', progressionId: 'goblet_squat'
-  },
-  {
-    id: 'goblet_squat',
-    name: 'Goblet Squat (kettlebell)',
-    category: 'Force - bas du corps',
-    cues: ['Charge au sternum', 'Torse haut'],
-    tags: ['load'],
-    regressionId: 'squat_bw', progressionId: 'back_squat'
-  },
-  {
-    id: 'back_squat',
-    name: 'Back Squat (barre)',
-    category: 'Force - bas du corps',
-    cues: ['Barre stable', 'Gainage fort'],
-    tags: ['load', 'heavy'],
-    regressionId: 'goblet_squat', progressionId: 'pistol_squat'
-  },
-  {
-    id: 'pistol_squat',
-    name: 'Pistol Squat (unilatéral)',
-    category: 'Force - bas du corps',
-    cues: ['Équilibre', 'Genou dans l’axe'],
-    tags: ['load', 'balance', 'heavy_knee'],
-    regressionId: 'back_squat', progressionId: null
+  'foot-core-towel-curls': {
+    name: 'Towel Curls (Enroulement serviette)',
+    category: 'foot-core',
+    target: 'Renforcement des fléchisseurs d\'orteils et de l\'arche',
+    equipment: 'bw, towel',
+    regression: 'foot-core-doming',
+    videoUrl: 'https://www.youtube.com/watch?v=1j_k_8i0_sM',
+    instructions: [
+      'Assis, pied à plat sur une serviette posée au sol.',
+      'Utilisez vos orteils pour ramener la serviette vers vous.',
+      'Gardez le talon au sol pendant tout le mouvement.',
+      'Une fois la serviette entièrement ramenée, étalez-la et recommencez.',
+    ],
   },
 
-  // --- GAINAGE ---
-  {
-    id: 'plank_knees',
-    name: 'Planche sur genoux',
-    category: 'Gainage',
-    cues: ['Bassin neutre'],
-    tags: ['rehab', 'core'],
-    regressionId: null, progressionId: 'plank_elbows'
-  },
-  {
-    id: 'plank_elbows',
-    name: 'Planche (coudes)',
-    category: 'Gainage',
-    cues: ['Ligne tête-bassin-talons'],
-    tags: ['core'],
-    regressionId: 'plank_knees', progressionId: 'plank_high'
-  },
-  {
-    id: 'plank_high',
-    name: 'High plank (bras tendus)',
-    category: 'Gainage',
-    cues: ['Mains sous épaules'],
-    tags: ['core'],
-    regressionId: 'plank_elbows', progressionId: 'plank_leg_lift'
-  },
-  {
-    id: 'plank_leg_lift',
-    name: 'Planche avec élévation',
-    category: 'Gainage',
-    cues: ['Pas de rotation bassin'],
-    tags: ['core'],
-    regressionId: 'plank_high', progressionId: null
+  // --- Activation Chaîne Postérieure ---
+  'glute-bridge': {
+    name: 'Pont Fessier (Glute Bridge)',
+    category: 'glute-activation',
+    target: 'Activation du grand fessier, stabilité du bassin',
+    equipment: 'bw',
+    videoUrl: 'https://www.youtube.com/watch?v=N48d7n_S6tY',
+    instructions: [
+      'Allongé sur le dos, genoux fléchis, pieds à plat près des fesses.',
+      'Contractez les fessiers pour soulever le bassin jusqu\'à former une ligne droite des genoux aux épaules.',
+      'Maintenez la contraction en haut pendant 2 secondes avant de redescendre lentement.',
+    ],
   },
 
-  // --- MOLLETS / TENDON ---
-  {
-    id: 'calf_iso_double',
-    name: 'Mollets Isométrique (2 pieds)',
-    category: 'Mollets - tendon',
-    cues: ['Monter haut', 'Tenir 45s sans bouger'],
-    tags: ['rehab', 'low_impact'],
-    regressionId: null, progressionId: 'calf_ecc_single'
+  // --- Force Générale ---
+  'squat-assisted': {
+    name: 'Squat Bipodal Assisté',
+    category: 'strength',
+    target: 'Apprentissage moteur du squat, force quadriceps/fessiers',
+    equipment: 'bw',
+    progression: 'squat-bw',
+    videoUrl: 'https://www.youtube.com/watch?v=OuR_GzG_q0Y',
+    instructions: [
+      'Utilisez un cadre de porte ou un TRX pour vous aider à maintenir l\'équilibre.',
+      'Descendez en contrôlant le mouvement, le dos droit, comme pour vous asseoir sur une chaise.',
+      'Utilisez l\'assistance au minimum pour remonter.',
+    ],
   },
-  {
-    id: 'calf_ecc_single',
-    name: 'Mollets Excentrique (1 pied)',
-    category: 'Mollets - tendon',
-    cues: ['Monter à 2 pieds', 'Descendre en 3-5s sur 1 pied'],
-    tags: ['rehab', 'low_impact'],
-    regressionId: 'calf_iso_double', progressionId: 'calf_single_loaded'
-  },
-  {
-    id: 'calf_single_loaded',
-    name: 'Mollets 1 pied chargé',
-    category: 'Mollets - tendon',
-    cues: ['Amplitude complète', 'Charge progressive'],
-    tags: ['load'],
-    regressionId: 'calf_ecc_single', progressionId: 'pogo_hops'
-  },
-  {
-    id: 'pogo_hops',
-    name: 'Pogo Hops (Pliométrie)',
-    category: 'Mollets - tendon',
-    cues: ['Rebonds rapides', 'Jambes ressort'],
-    tags: ['impact', 'plyo', 'risk'],
-    regressionId: 'calf_single_loaded', progressionId: null
+  'squat-bw': {
+    name: 'Squat Bipodal (Poids du corps)',
+    category: 'strength',
+    target: 'Force des quadriceps et fessiers',
+    equipment: 'bw',
+    regression: 'squat-assisted',
+    videoUrl: 'https://www.youtube.com/watch?v=xqvCmoLULNY',
+    instructions: [
+      'Pieds largeur d\'épaules, pointes de pieds légèrement ouvertes.',
+      'Descendez en gardant le dos droit et le torse ouvert, jusqu\'à ce que les cuisses soient parallèles au sol.',
+      'Poussez sur les talons pour remonter à la position de départ.',
+    ],
   },
 
-  // --- PIED / FOOT CORE ---
-  {
-    id: 'short_foot',
-    name: 'Short Foot (Doming)',
-    category: 'Pied - foot core',
-    cues: ['Rapprocher avant-pied du talon', 'Ne pas crisper orteils'],
-    tags: ['rehab', 'low_impact'],
-    regressionId: null, progressionId: 'toe_yoga'
+  // --- Mollets & Tendon d'Achille ---
+  'calf-raise-straight': {
+    name: 'Élévation Mollets (Genou tendu)',
+    category: 'calf-achilles',
+    target: 'Renforcement du gastrocnémien',
+    equipment: 'bw',
+    progression: 'calf-raise-bent',
+    videoUrl: 'https://www.youtube.com/watch?v=HmgXnST4Mdw',
+    instructions: [
+      'Debout, en appui sur un pied (optionnel), montez sur la pointe du pied aussi haut que possible.',
+      'Contrôlez la descente sur 3 à 5 secondes.',
+      'Le genou de la jambe de travail doit rester tendu.',
+    ],
   },
-  {
-    id: 'toe_yoga',
-    name: 'Yoga des orteils',
-    category: 'Pied - foot core',
-    cues: ['Dissocier gros orteil'],
-    tags: ['rehab', 'low_impact'],
-    regressionId: 'short_foot', progressionId: 'single_leg_balance'
+  'calf-raise-bent': {
+    name: 'Élévation Mollets (Genou fléchi)',
+    category: 'calf-achilles',
+    target: 'Renforcement du soléaire',
+    equipment: 'bw',
+    regression: 'calf-raise-straight',
+    videoUrl: 'https://www.youtube.com/watch?v=HmgXnST4Mdw&t=125s',
+    instructions: [
+      'Assis, ou debout avec le genou de la jambe de travail fléchi (environ 90 degrés).',
+      'Montez sur la pointe du pied aussi haut que possible.',
+      'Contrôlez la descente lentement.',
+    ],
   },
-  {
-    id: 'single_leg_balance',
-    name: 'Équilibre 1 pied',
-    category: 'Pied - contrôle',
-    cues: ['Bassin stable', 'Regard loin'],
-    tags: ['balance', 'low_impact'],
-    regressionId: 'toe_yoga', progressionId: null
+};
+
+/**
+ * Retrouve un exercice par son ID
+ * @param {string} id
+ * @returns {object | undefined}
+ */
+export function getExercise(id) {
+  return EXERCISES[id];
+}
+
+/**
+ * Retourne tous les exercices sous forme de tableau.
+ * @returns {object[]}
+ */
+export function listExercises() {
+  return Object.entries(EXERCISES).map(([id, data]) => ({ id, ...data }));
+}
+
+/**
+ * Retourne la chaîne de progression complète pour un exercice donné
+ * @param {string} id
+ * @returns {object[]}
+ */
+export function getProgressionChain(id) {
+  const chain = [];
+  if (!EXERCISES[id]) {
+    return []; // Retourne un tableau vide si l'ID n'est pas valide
   }
-];
+  let currentId = id;
 
-// --- TEMPLATES ---
-export const WORKOUT_TEMPLATES = [
-  {
-    id: 'runner_strength_base',
-    name: 'Renforcement Coureur (Base)',
-    description: 'La séance fondamentale : Mobilité + Force + Mollets.',
-    exercises: ['lunge_matrix', 'goblet_squat', 'calf_ecc_single', 'plank_elbows'],
-    tags: ['general']
-  },
-  {
-    id: 'power_session',
-    name: 'Puissance & Pliométrie',
-    description: 'Avancé uniquement. Fraîcheur requise.',
-    exercises: ['lunge_matrix', 'pogo_hops', 'back_squat'],
-    tags: ['performance', 'impact']
-  },
-  {
-    id: 'foot_core_routine',
-    name: 'Routine "Pied Fort"',
-    description: 'Fondation du pied. Idéal transition minimaliste.',
-    exercises: ['short_foot', 'toe_yoga', 'calf_iso_double', 'single_leg_balance'],
-    tags: ['prehab', 'low_impact']
-  },
-  // --- REHAB TEMPLATES ---
-  {
-    id: 'rehab_achilles_phase1',
-    name: '🚑 Réhab Achille (Phase 1)',
-    description: 'Douleur tendineuse ? Priorité à l’isométrie et au contrôle.',
-    exercises: ['calf_iso_double', 'short_foot', 'plank_knees', 'squat_assisted'],
-    tags: ['rehab', 'safe']
-  },
-  {
-    id: 'rehab_itbs_knee',
-    name: '🚑 Réhab Genou / ITBS',
-    description: 'Activation fessiers sans charge axiale lourde.',
-    exercises: ['clamshell_iso', 'plank_elbows', 'squat_assisted', 'single_leg_balance'],
-    tags: ['rehab', 'safe']
+  // Remonte jusqu'au début de la chaîne (régression)
+  while (EXERCISES[currentId] && EXERCISES[currentId].regression) {
+    currentId = EXERCISES[currentId].regression;
   }
-];
 
-const MAP = new Map(EXERCISES.map(e => [e.id, e]));
-const TPL_MAP = new Map(WORKOUT_TEMPLATES.map(t => [t.id, t]));
-
-export function getExercise(id) { return MAP.get(id) || null; }
-export function listExercises() { return EXERCISES.slice(); }
-
-export function getTemplate(id) { return TPL_MAP.get(id) || null; }
-export function listTemplates() { return WORKOUT_TEMPLATES.slice(); }
-
-export function walkProgression(startId, dir = 'progression', max = 10) {
-  const out = [];
-  let cur = getExercise(startId);
-  let steps = 0;
-  while (cur && steps < max) {
-    out.push(cur);
-    cur = dir === 'regression' ? getExercise(cur.regressionId) : getExercise(cur.progressionId);
-    steps += 1;
+  // Descend la chaîne jusqu'à la fin (progression)
+  while (currentId && EXERCISES[currentId]) {
+    chain.push({ id: currentId, ...EXERCISES[currentId] });
+    currentId = EXERCISES[currentId].progression;
   }
-  return out;
+
+  return chain;
+}
+
+// --- Modèles de séance ---
+export const WORKOUT_TEMPLATES = {
+  'fondations': {
+    name: 'Fondations (Prévention & Stabilité)',
+    description: 'Une séance rapide axée sur le renforcement du pied et l\'activation de la chaîne postérieure. Idéale en début de cycle ou pour la récupération active.',
+    blocks: [
+      { name: 'Échauffement', exercises: [{ id: 'lunge-forward', type: 'reps', sets: 1, reps: 10 }] },
+      { name: 'Foot Core', exercises: [{ id: 'foot-core-doming', type: 'hold', sets: 3, holdSeconds: 8 }] },
+      { name: 'Activation Fessiers', exercises: [{ id: 'glute-bridge', type: 'reps', sets: 3, reps: 15 }] },
+    ],
+  },
+  'force-runner': {
+    name: 'Force pour Coureurs (HSR)',
+    description: 'Séance basée sur les principes de "Heavy Slow Resistance" pour améliorer l\'économie de course et la résilience des tissus.',
+    blocks: [
+      { name: 'Échauffement', exercises: [{ id: 'lunge-forward', type: 'reps', sets: 1, reps: 10 }] },
+      { name: 'Force', exercises: [{ id: 'squat-bw', type: 'apre', apreProtocol: 'APRE6' }] },
+      { name: 'Mollets', exercises: [{ id: 'calf-raise-straight', type: 'reps', sets: 3, reps: 15 }] },
+    ],
+  },
+};
+
+export function getTemplate(id) {
+  return WORKOUT_TEMPLATES[id];
+}
+
+export function listTemplates() {
+  return Object.entries(WORKOUT_TEMPLATES).map(([id, t]) => ({ id, ...t }));
 }

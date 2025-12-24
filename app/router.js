@@ -16,9 +16,16 @@ function parseHash() {
 }
 
 export function createRouter({ routes, onRoute } = {}) {
+  let currentView = null;
+
   async function render() {
+    // 1. Appelle la fonction de nettoyage de la vue précédente
+    if (currentView && typeof currentView.onunload === 'function') {
+      currentView.onunload();
+    }
+
     const { path, query } = parseHash();
-    const view = routes[path] || routes['/404'] || routes['/home'];
+    const viewFactory = routes[path] || routes['/404'] || routes['/home'];
     const root = qs('#app');
 
     // nav active
@@ -31,8 +38,15 @@ export function createRouter({ routes, onRoute } = {}) {
     if (!root) return;
 
     root.innerHTML = '';
-    const el = await view({ path, query });
-    if (el) root.appendChild(el);
+
+    // 2. Crée la nouvelle vue et stocke sa référence
+    currentView = await viewFactory({ path, query });
+
+    // 3. Affiche la nouvelle vue
+    if (currentView && currentView.el) {
+      root.appendChild(currentView.el);
+    }
+
     if (typeof onRoute === 'function') onRoute({ path, query });
   }
 

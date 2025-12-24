@@ -48,7 +48,7 @@ export async function HistoryView() {
     h('td', {}, p.state || '—')
   ));
 
-  return h('div', { class: 'grid' },
+  const el = h('div', { class: 'grid' },
     Card('Historique',
       Notice('<strong>Tout est local</strong> - donc oui, ça survit au réseau. Essayez de survivre aux chaussettes humides aussi.'),
       Divider(),
@@ -89,4 +89,6 @@ export async function HistoryView() {
       ) : Notice('Aucun check douleur enregistré.')
     )
   );
+
+  return { el };
 }
